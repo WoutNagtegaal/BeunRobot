@@ -21,24 +21,24 @@ void setup() {
   Serial.println("De beunrobot is gestart");
 
   char* message = "#50|500&";
-  uint8_t values[2] = {0};
+  uint16_t values[2] = {0};
   readBytes(message, values, 2);
   Serial.println(values[0]);
   Serial.println(values[1]);
 }
 
 void loop() {
-  for (pos = 0; pos <= 180; pos += 1) { 
-    myservo.write(pos);             
-    delay(5);                       
-  }
-  for (pos = 180; pos >= 0; pos -= 1) { 
-    myservo.write(pos);              
-    delay(5);                       
-  }
+  // for (pos = 0; pos <= 180; pos += 1) { 
+  //   myservo.write(pos);             
+  //   delay(5);                       
+  // }
+  // for (pos = 180; pos >= 0; pos -= 1) { 
+  //   myservo.write(pos);              
+  //   delay(5);                       
+  // }
 }
 
-statusCode readBytes(const char* message, uint8_t* data, uint8_t length) {
+statusCode readBytes(const char* message, uint16_t* data, uint8_t length) {
     if (!message || !data) {
         return INVALID_INPUT;
     }
@@ -57,7 +57,7 @@ statusCode readBytes(const char* message, uint8_t* data, uint8_t length) {
             }
             continue;
         }
-        data[currentIndex] = (uint8_t)(data[currentIndex] * 10 + (message[i] - '0'));
+        data[currentIndex] = (uint16_t)(data[currentIndex] * 10 + (message[i] - '0'));
     }
     return OK;
 }
