@@ -15,16 +15,27 @@ Servo myservo;
 
 int pos = 0;    
 
+#define MAX_BUFFER_LENGTH 35
+
+struct buffer {
+    char buffer[MAX_BUFFER_LENGTH + 1]; // +1 for the null terminator
+    uint8_t currentIndex;
+};
+
+struct buffer clientBuffer;
+
 void setup() {
   myservo.attach(6); 
   Serial.begin(9600);
-  Serial.println("De beunrobot is gestart");
+  // Serial.println("De beunrobot is gestart");
 
-  char* message = "#50|500&";
-  uint16_t values[2] = {0};
-  readBytes(message, values, 2);
-  Serial.println(values[0]);
-  Serial.println(values[1]);
+  // char* message = "#50|500&";
+  // uint16_t values[2] = {0};
+  // readBytes(message, values, 2);
+  // Serial.println(values[0]);
+  // Serial.println(values[1]);
+
+  bufferInit(&clientBuffer);
 }
 
 void loop() {
@@ -36,7 +47,33 @@ void loop() {
   //   myservo.write(pos);              
   //   delay(5);                       
   // }
+
+  // char* message = "#50|500&";
+  uint16_t values[2] = {0};
+
+  while ((Serial.available())) {
+        char currentChar = Serial.read();
+        switch (currentChar) {
+            case '#':
+                bufferInit(&clientBuffer);
+                bufferAddChar(&clientBuffer, currentChar);
+                break;
+            case '&':
+                bufferAddChar(&clientBuffer, currentChar);
+                bufferAddNullTerminator(&clientBuffer);
+                // convertTcpToCan(clientBuffer.buffer, &messageBuffer, &canFrame);
+                readBytes(clientBuffer.buffer, values, 2);
+                Serial.println(values[0]);
+                Serial.println(values[1]);
+                bufferInit(&clientBuffer);
+                break;
+            default:
+                bufferAddChar(&clientBuffer, currentChar);
+                break;
+        }
+    }
 }
+
 
 statusCode readBytes(const char* message, uint16_t* data, uint8_t length) {
     if (!message || !data) {
