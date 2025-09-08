@@ -26,28 +26,12 @@ struct buffer clientBuffer;
 
 void setup() {
   myservo.attach(6); 
+  myservo.write(pos);
   Serial.begin(9600);
-  // Serial.println("De beunrobot is gestart");
-
-  // char* message = "#50|500&";
-  // uint16_t values[2] = {0};
-  // readBytes(message, values, 2);
-  // Serial.println(values[0]);
-  // Serial.println(values[1]);
-
   bufferInit(&clientBuffer);
 }
 
 void loop() {
-  // for (pos = 0; pos <= 180; pos += 1) { 
-  //   myservo.write(pos);             
-  //   delay(5);                       
-  // }
-  // for (pos = 180; pos >= 0; pos -= 1) { 
-  //   myservo.write(pos);              
-  //   delay(5);                       
-  // }
-
   // char* message = "#50|500&";
   uint16_t values[2] = {0};
 
@@ -74,11 +58,31 @@ void loop() {
 }
 
 void handleBeun(uint16_t corner, uint16_t speedyTime) {
+  int start = pos;           // current position
+  int end = corner;          // target position
+  pos = corner;
   Serial.println(corner);
   Serial.println(speedyTime);
   if(speedyTime == 0) {
-    myservo.write(corner);    
+    myservo.write(corner);   
+    return; 
   }
+  Serial.println("We have gotten some time");
+  
+  int steps = abs(end - start);  // number of steps = distance
+  if (steps == 0) return;        // already at target
+
+  int stepTime = speedyTime / steps;  // ms per step
+  Serial.println(stepTime);
+
+  int dir = (end > start) ? 1 : -1;
+
+  for (int p = start; p != end; p += dir) {
+    myservo.write(p);
+    delay(stepTime);   // wait between steps
+  }
+
+  myservo.write(end);  // final position, just in case
 }
 
 statusCode readBytes(const char* message, uint16_t* data, uint8_t length) {
