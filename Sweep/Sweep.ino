@@ -1,31 +1,63 @@
-/* Sweep
- by BARRAGAN <http://barraganstudio.com>
- This example code is in the public domain.
-
- modified 8 Nov 2013
- by Scott Fitzgerald
- https://www.arduino.cc/en/Tutorial/LibraryExamples/Sweep
-*/
+typedef enum {
+    OK = 0,
+    ERROR = -1,
+    NOT_FOUND = -2,
+    INVALID_INPUT = -3,
+    OUT_OF_RANGE = -4,
+    MEMORY_ERROR = -5,
+    ALREADY_EXISTS = -6,
+    DISCONNECTED = -7
+} statusCode;
 
 #include <Servo.h>
 
-Servo myservo;  // create Servo object to control a servo
-// twelve Servo objects can be created on most boards
+Servo myservo; 
 
-int pos = 0;    // variable to store the servo position
+int pos = 0;    
 
 void setup() {
-  myservo.attach(6);  // attaches the servo on pin 9 to the Servo object
+  myservo.attach(6); 
+  Serial.begin(9600);
+  Serial.println("De beunrobot is gestart");
+
+  char* message = "#50|500&";
+  uint8_t values[2] = {0};
+  readBytes(message, values, 2);
+  Serial.println(values[0]);
+  Serial.println(values[1]);
 }
 
 void loop() {
-  for (pos = 0; pos <= 180; pos += 1) { // goes from 0 degrees to 180 degrees
-    // in steps of 1 degree
-    myservo.write(pos);              // tell servo to go to position in variable 'pos'
-    delay(15);                       // waits 15 ms for the servo to reach the position
+  for (pos = 0; pos <= 180; pos += 1) { 
+    myservo.write(pos);             
+    delay(5);                       
   }
-  for (pos = 180; pos >= 0; pos -= 1) { // goes from 180 degrees to 0 degrees
-    myservo.write(pos);              // tell servo to go to position in variable 'pos'
-    delay(15);                       // waits 15 ms for the servo to reach the position
+  for (pos = 180; pos >= 0; pos -= 1) { 
+    myservo.write(pos);              
+    delay(5);                       
   }
+}
+
+statusCode readBytes(const char* message, uint8_t* data, uint8_t length) {
+    if (!message || !data) {
+        return INVALID_INPUT;
+    }
+    // Save the current index where the data should be stored
+    uint8_t currentIndex = 0;
+    for (size_t i = 0; i < strlen(message); i++) {
+        // Skip the start and end bytes
+        if (message[i] == '&' || message[i] == '#') {
+            continue;
+        }
+        // If the separator is found, move to the next byte
+        if (message[i] == '|') {
+            currentIndex++;
+            if (currentIndex >= length) {
+                return OUT_OF_RANGE;
+            }
+            continue;
+        }
+        data[currentIndex] = (uint8_t)(data[currentIndex] * 10 + (message[i] - '0'));
+    }
+    return OK;
 }
