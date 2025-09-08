@@ -35,7 +35,7 @@ void loop() {
   // char* message = "#50|500&";
   uint16_t values[2] = {0};
 
-  while ((Serial.available())) {
+  if ((Serial.available())) {
         char currentChar = Serial.read();
         switch (currentChar) {
             case '#':
