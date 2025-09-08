@@ -63,8 +63,7 @@ void loop() {
                 bufferAddNullTerminator(&clientBuffer);
                 // convertTcpToCan(clientBuffer.buffer, &messageBuffer, &canFrame);
                 readBytes(clientBuffer.buffer, values, 2);
-                Serial.println(values[0]);
-                Serial.println(values[1]);
+                handleBeun(values[0], values[1]);
                 bufferInit(&clientBuffer);
                 break;
             default:
@@ -74,6 +73,13 @@ void loop() {
     }
 }
 
+void handleBeun(uint16_t corner, uint16_t speedyTime) {
+  Serial.println(corner);
+  Serial.println(speedyTime);
+  if(speedyTime == 0) {
+    myservo.write(corner);    
+  }
+}
 
 statusCode readBytes(const char* message, uint16_t* data, uint8_t length) {
     if (!message || !data) {
